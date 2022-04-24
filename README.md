@@ -1,2 +1,2 @@
 # qd
-quickdraw - cli drawing tool
+quickdraw - a cli plotting tool
