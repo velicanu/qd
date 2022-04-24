@@ -7,7 +7,9 @@
 black==22.3.0
     # via -r requirements-dev.in
 click==8.1.2
-    # via black
+    # via
+    #   -c requirements.txt
+    #   black
 flake8==4.0.1
     # via -r requirements-dev.in
 isort==5.10.1
