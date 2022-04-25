@@ -7,6 +7,7 @@ import tempfile
 import click
 import pandas as pd
 import plotly.express as px
+from _plotly_utils.colors.qualitative import Plotly as colors
 from plotly.graph_objs.scatter import ErrorY
 
 
@@ -113,10 +114,14 @@ def get_quant_fig(df, title, xcol, ycols, nbins, quantile):
 @click.option("--mean", "plot", flag_value="mean", help="draw means of bins")
 @click.option("--quant", "plot", flag_value="quant", help="draw quantiles of bins")
 @click.option("--gui", is_flag=True, help="show output in a gui")
-def main(input, output, title, xcol, ycol, nbins, quantile, plot, gui):
+@click.option("--dualy", is_flag=True, help="two y axes for two lines")
+def main(input, output, title, xcol, ycol, nbins, quantile, plot, gui, dualy):
     df = get_df(input)
     _xcol = xcol if xcol else df.columns[0]
     ycols = ycol.split(",") if ycol else [df.columns[1]]
+    if dualy and len(ycols) != 2:
+        print("exactly 2 y columns are required for dual y axes")
+        return
 
     if plot == "mean":
         fig = get_mean_fig(df, title, _xcol, ycols, nbins)
@@ -126,6 +131,24 @@ def main(input, output, title, xcol, ycol, nbins, quantile, plot, gui):
         fig = get_line_fig(df, title, _xcol, ycols)
 
     fig.update_layout(title=title if title else input.name, title_x=0.5)
+    if dualy:
+        fig.data[1].yaxis = "y2"
+        fig.update_layout(
+            yaxis1={
+                "side": "left",
+                "title": ycols[0],
+                "tickfont": {"color": colors[0]},
+                "titlefont": {"color": colors[0]},
+            },
+            yaxis2={
+                "side": "right",
+                "title": ycols[1],
+                "tickfont": {"color": colors[1]},
+                "titlefont": {"color": colors[1]},
+                "overlaying": "y",
+            },
+        )
+
     if gui:
         fig.show()
         return
