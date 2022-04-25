@@ -7,12 +7,14 @@ import tempfile
 import click
 import pandas as pd
 import plotly.express as px
+from plotly.graph_objs.scatter import ErrorY
 
 
 def get_df(input):
     with tempfile.TemporaryDirectory() as tmpdir:
         input_ = os.path.join(tmpdir, "_")
         with open(input_, "w") as out:
+            # needed to cache when reading from stdin
             out.write(input.read())
         try:
             return pd.read_json(input_, lines=True)
@@ -25,51 +27,71 @@ def get_df(input):
             pass
 
 
-def get_line_fig(df, title, xcol, ycol, xlabel, ylabel):
-    _xcol = xcol if xcol else df.columns[0]
-    _ycol = ycol if xcol else df.columns[1]
-    return px.line(
+def get_line_fig(df, title, xcol, ycols):
+    fig = px.line(
         df,
-        x=_xcol,
-        y=_ycol,
-        labels={
-            _xcol: (xlabel if xlabel else _xcol),
-            _ycol: (ylabel if ylabel else _ycol),
-        },
+        x=xcol,
+        y=ycols,
     )
 
+    return fig
 
-def get_dist_fig(df, title, xcol, ycol, xlabel, ylabel, nbins):
-    _xcol = xcol if xcol else df.columns[0]
-    _ycol = ycol if xcol else df.columns[1]
+
+def get_mean_fig(df, title, xcol, ycols, nbins):
 
     try:
-        df_binned = df.groupby(pd.cut(df[_xcol], nbins)).mean()
-        df_binned["__sem__"] = df.groupby(pd.cut(df[_xcol], nbins)).sem()[_ycol]
+        df_binned = df.groupby(pd.cut(df[xcol], nbins)).mean()
+        for _ycol in ycols:
+            df_binned[f"{_ycol}_sem"] = df.groupby(pd.cut(df[xcol], nbins)).sem()[_ycol]
     except TypeError:  # if cut doesn't work assume time_range
-        df[_xcol] = pd.to_datetime(df[_xcol])
-        time_range = df[_xcol].max() - df[_xcol].min()
+        df[xcol] = pd.to_datetime(df[xcol])
+        time_range = df[xcol].max() - df[xcol].min()
         interval = time_range / nbins
-        df_binned = df.resample(interval, on=_xcol).mean()
-        df_binned[_xcol] = (
-            df.resample(interval, on=_xcol).min()[_xcol]
+        df_binned = df.resample(interval, on=xcol).mean()
+        df_binned[xcol] = (
+            df.resample(interval, on=xcol).min()[xcol]
             + (
-                df.resample(interval, on=_xcol).max()[_xcol]
-                - df.resample(interval, on=_xcol).min()[_xcol]
+                df.resample(interval, on=xcol).max()[xcol]
+                - df.resample(interval, on=xcol).min()[xcol]
             )
             / 2.0
         )
-        df_binned["__sem__"] = df.resample(interval, on=_xcol).sem()[_ycol]
+        for _ycol in ycols:
+            df_binned[f"{_ycol}_sem"] = df.resample(interval, on=xcol).sem()[_ycol]
+
+    fig = px.line(
+        df_binned,
+        x=xcol,
+        y=ycols,
+    )
+    for idx, _ycol in enumerate(ycols):
+        fig.data[idx].error_y = ErrorY(array=df_binned[f"{_ycol}_sem"].to_numpy())
+
+    return fig
+
+
+def get_quant_fig(df, title, xcol, ycols, nbins, quantile):
+    _quantile = quantile / 100.0
+    try:
+        df_binned = df.groupby(pd.cut(df[xcol], nbins)).quantile(q=_quantile)
+    except TypeError:  # if cut doesn't work assume time_range
+        df[xcol] = pd.to_datetime(df[xcol])
+        time_range = df[xcol].max() - df[xcol].min()
+        interval = time_range / nbins
+        df_binned = df.resample(interval, on=xcol).quantile(q=_quantile)
+        df_binned[xcol] = (
+            df.resample(interval, on=xcol).min()[xcol]
+            + (
+                df.resample(interval, on=xcol).max()[xcol]
+                - df.resample(interval, on=xcol).min()[xcol]
+            )
+            / 2.0
+        )
 
     return px.line(
         df_binned,
-        x=_xcol,
-        y=_ycol,
-        labels={
-            _xcol: (xlabel if xlabel else _xcol),
-            _ycol: (ylabel if ylabel else _ycol),
-        },
-        error_y="__sem__",  # standard error of mean
+        x=xcol,
+        y=ycols,
     )
 
 
@@ -83,19 +105,25 @@ def get_dist_fig(df, title, xcol, ycol, xlabel, ylabel, nbins):
 @click.option("-t", "--title", type=str, help="Title, default input filename")
 @click.option("-x", "--xcol", type=str, help="x column, default first column")
 @click.option("-y", "--ycol", type=str, help="y column, default second column")
-@click.option("-xl", "--xlabel", type=str, help="x label, default x column")
-@click.option("-yl", "--ylabel", type=str, help="x label, default x column")
 @click.option("-n", "--nbins", type=int, default=60, help="number of bins")
-@click.option("--line", "plot", flag_value="line", default=True)
-@click.option("--dist", "plot", flag_value="dist")
-@click.option("--gui", is_flag=True)
-def main(input, output, title, xcol, ycol, xlabel, ylabel, nbins, plot, gui):
+@click.option("-q", "--quantile", type=int, default=50, help="quantile, aka percentile")
+@click.option(
+    "--line", "plot", flag_value="line", default=True, help="draw line plot (default)"
+)
+@click.option("--mean", "plot", flag_value="mean", help="draw means of bins")
+@click.option("--quant", "plot", flag_value="quant", help="draw quantiles of bins")
+@click.option("--gui", is_flag=True, help="show output in a gui")
+def main(input, output, title, xcol, ycol, nbins, quantile, plot, gui):
     df = get_df(input)
+    _xcol = xcol if xcol else df.columns[0]
+    ycols = ycol.split(",") if ycol else [df.columns[1]]
 
-    if plot == "dist":
-        fig = get_dist_fig(df, title, xcol, ycol, xlabel, ylabel, nbins)
+    if plot == "mean":
+        fig = get_mean_fig(df, title, _xcol, ycols, nbins)
+    elif plot == "quant":
+        fig = get_quant_fig(df, title, _xcol, ycols, nbins, quantile)
     else:
-        fig = get_line_fig(df, title, xcol, ycol, xlabel, ylabel)
+        fig = get_line_fig(df, title, _xcol, ycols)
 
     fig.update_layout(title=title if title else input.name, title_x=0.5)
     if gui:
