@@ -23,12 +23,19 @@ def get_df(input):
             pass
 
         try:
-            return pd.read_csv(input_)
+            df = pd.read_csv(input_)
+            if len(df.columns) < 2:
+                if len(df.head(1).values[0][0].split()) == 2:
+                    # for space seperated values with no header
+                    return pd.read_csv(input_, header=None, sep=None, names=["x", "y"])
+            else:
+                return df
         except ValueError:
             pass
 
 
 def get_line_fig(df, title, xcol, ycols):
+    # breakpoint()
     fig = px.line(
         df,
         x=xcol,
