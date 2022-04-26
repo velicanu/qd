@@ -11,10 +11,6 @@ import plotly.express as px
 import plotly.graph_objs as go
 from _plotly_utils.colors.qualitative import Plotly as colors
 
-# from plotly.graph_objs.scatter import ErrorY as sErrorY
-
-# from plotly.graph_objs.histogram.ErrorY import as hErrorY
-
 
 def get_df(input):
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -78,15 +74,17 @@ def get_hist_fig(df, xcols, nbins):
             df_binned["__rootn"] = df_binned["__count"] ** (1 / 2)
             binned_dfs.append(df_binned)
 
-    fig = px.line(binned_dfs[0], x=xcols[0], y="__count", error_y="__rootn")
-    for idx, (col, df_) in enumerate(zip(xcols[1:], binned_dfs[1:])):
+    fig = go.Figure()
+    for idx, (col, df_) in enumerate(zip(xcols, binned_dfs)):
         fig.add_trace(
             go.Scatter(
                 x=df_[col],
                 y=df_["__count"],
+                name=col,
                 error_y=go.scatter.ErrorY(array=df_["__rootn"].to_numpy()),
             )
         )
+
     return fig
 
 
