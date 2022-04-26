@@ -49,6 +49,8 @@ def get_mean_fig(df, title, xcol, ycols, nbins):
 
     try:
         df_binned = df.groupby(pd.cut(df[xcol], nbins)).mean()
+        if xcol not in df_binned.columns:
+            raise TypeError
         for _ycol in ycols:
             df_binned[f"{_ycol}_sem"] = df.groupby(pd.cut(df[xcol], nbins)).sem()[_ycol]
     except TypeError:  # if cut doesn't work assume time_range
@@ -113,8 +115,14 @@ def get_quant_fig(df, title, xcol, ycols, nbins, quantile):
 @click.option("-t", "--title", type=str, help="Title, default input filename")
 @click.option("-x", "--xcol", type=str, help="x column, default first column")
 @click.option("-y", "--ycol", type=str, help="y column, default second column")
-@click.option("-n", "--nbins", type=int, default=60, help="number of bins")
-@click.option("-q", "--quantile", type=int, default=50, help="quantile, aka percentile")
+@click.option("-n", "--nbins", type=int, default=60, help="number of bins [60]")
+@click.option(
+    "-q",
+    "--quantile",
+    type=int,
+    default=50,
+    help="quantile, aka percentile [50]",
+)
 @click.option(
     "--line", "plot", flag_value="line", default=True, help="draw line plot (default)"
 )
