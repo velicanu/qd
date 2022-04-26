@@ -7,7 +7,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 README = open(os.path.join(SCRIPT_DIR, "README.md")).read()
 
 setup(
-    name="qd",
+    name="quick-draw",
     version="0.0.0a1",
     description="quickdraw - a cli plotting tool",
     long_description=README,
