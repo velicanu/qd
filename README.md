@@ -1,13 +1,37 @@
 # qd
-quickdraw - a cli plotting tool
+
+quick-draw: a cli plotting tool
+
+
+
+## Installation and usage
+
+_qd_ can be installed via `pip install quick-draw`. It requires Python 3.7+.
 
 ## Examples
 
-### Quick plot
+### Basic usage
 
-Make a quick plot using the first columns available.
+Make a quick plot using the first columns available and display the output right in the
+terminal.
 
+```bash
+cat data/trig.json | qd | imgcat
+```
 ![qd-basic](./media/qd_basic.gif)
+
+In addition to reading from stdin and writing to stdout, files can also be passed in as
+arguments.
+
+```bash
+qd -i data/trig.json -o trig.png
+```
+
+The output can also be shown in an interactive gui (due to plotly under the hood).
+
+```bash
+qd -i data/trig.json --gui
+```
 
 ### Mean in bins
 
@@ -20,3 +44,18 @@ Plot the mean values in some bins specifying the x and y columns.
 Plot the 95th percentile values in 20 bins
 
 ![qd-quant](./media/qd_quant.gif)
+
+## Local Development
+
+Clone this repo from github and in a virtual environment do the following:
+
+```bash
+pip install .  # installs qd based on local code changes
+pip install -r requirements-dev.txt  # installs extra packages for dev and testing
+```
+
+Tests can be run via:
+
+```bash
+pytest -n4
+```

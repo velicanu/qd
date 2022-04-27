@@ -24,18 +24,7 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     include_package_data=True,
-    install_requires=[
-        "click>=8.1.2",
-        "imgcat>=0.5.0",
-        "kaleido>=0.2.1",
-        "numpy>=1.22.3",
-        "pandas>=1.4.2",
-        "plotly>=5.7.0",
-        "python-dateutil>=2.8.2",
-        "pytz>=2022.1",
-        "six>=1.16.0",
-        "tenacity>'=8.0.1",
-    ],
+    install_requires=["click", "imgcat", "kaleido", "pandas", "plotly"],
     entry_points={
         "console_scripts": [
             "qd=qd:main",
