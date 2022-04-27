@@ -55,71 +55,78 @@ x,cos,sin
 
 
 def test_cli_no_args():
-    proc = subprocess.run("qd -i data/cossin.json".split())
+    proc = subprocess.run("qd -i data/trig.json".split())
     assert proc.returncode == 0
 
 
 def test_cli_line(tmpfile):
-    subprocess.run(f"qd -i data/cossin.json -y cos,sin -o {tmpfile}".split())
+    subprocess.run(f"qd -i data/trig.json -y cos,sin -o {tmpfile}".split())
     assert os.path.exists(tmpfile)
 
 
 def test_cli_mean(tmpfile):
-    subprocess.run(f"qd -i data/cossin.json -y cos,sin --mean -o {tmpfile}".split())
+    subprocess.run(f"qd -i data/trig.json -y cos,sin --mean -o {tmpfile}".split())
     assert os.path.exists(tmpfile)
 
 
 def test_cli_quant(tmpfile):
-    subprocess.run(f"qd -i data/cossin.json -y cos,sin --quant -o {tmpfile}".split())
+    subprocess.run(f"qd -i data/trig.json -y cos,sin --quant -o {tmpfile}".split())
     assert os.path.exists(tmpfile)
 
 
 def test_cli_line_dualy(tmpfile):
-    subprocess.run(f"qd -i data/cossin.json -y cos,sin --dualy -o {tmpfile}".split())
+    subprocess.run(f"qd -i data/trig.json -y cos,sin --dualy -o {tmpfile}".split())
     assert os.path.exists(tmpfile)
 
 
 def test_cli_mean_dualy(tmpfile):
     subprocess.run(
-        f"qd -i data/cossin.json -y cos,sin --mean --dualy -o {tmpfile}".split()
+        f"qd -i data/trig.json -y cos,sin --mean --dualy -o {tmpfile}".split()
     )
     assert os.path.exists(tmpfile)
 
 
 def test_cli_quant_dualy(tmpfile):
     subprocess.run(
-        f"qd -i data/cossin.json -y cos,sin --quant --dualy -o {tmpfile}".split()
+        f"qd -i data/trig.json -y cos,sin --quant --dualy -o {tmpfile}".split()
     )
     assert os.path.exists(tmpfile)
 
 
 def test_cli_quant_75(tmpfile):
     subprocess.run(
-        f"qd -i data/cossin.json -y cos,sin --quant -q 75 -o {tmpfile}".split()
+        f"qd -i data/trig.json -y cos,sin --quant -q 75 -o {tmpfile}".split()
     )
     assert os.path.exists(tmpfile)
 
 
 def test_cli_mean_nbins(tmpfile):
     subprocess.run(
-        f"qd -i data/cossin.json -y cos,sin --mean --nbins 9 -o {tmpfile}".split()
+        f"qd -i data/trig.json -y cos,sin --mean --nbins 9 -o {tmpfile}".split()
     )
     assert os.path.exists(tmpfile)
 
 
 def test_cli_xcol(tmpfile):
-    subprocess.run(f"qd -i data/cossin.json -x cos -y sin -o {tmpfile}".split())
+    subprocess.run(f"qd -i data/trig.json -x cos -y sin -o {tmpfile}".split())
     assert os.path.exists(tmpfile)
 
 
 def test_cli_stdin(tmpfile):
-    cat = subprocess.Popen(("cat", "data/cossin.json"), stdout=subprocess.PIPE)
+    cat = subprocess.Popen(("cat", "data/trig.json"), stdout=subprocess.PIPE)
     subprocess.check_output(("qd", "-o", tmpfile), stdin=cat.stdout)
     assert os.path.exists(tmpfile)
 
 
 def test_cli_stdin_stdout(tmpfile):
-    cat = subprocess.Popen(("cat", "data/cossin.json"), stdout=subprocess.PIPE)
+    cat = subprocess.Popen(("cat", "data/trig.json"), stdout=subprocess.PIPE)
     with open(tmpfile, "w") as f:
         subprocess.Popen("qd", stdin=cat.stdout, stdout=f)
+    assert os.path.exists(tmpfile)
+
+
+def test_cli_hist_csv(tmpfile):
+    subprocess.run(
+        f"qd -i data/dists.csv -x gauss,expo --hist --nbins 9 -o {tmpfile}".split()
+    )
     assert os.path.exists(tmpfile)
