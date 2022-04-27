@@ -18,7 +18,9 @@ terminal.
 ```bash
 cat data/trig.json | qd | imgcat
 ```
-![qd-basic](./media/qd_basic.gif)
+<!-- https://raw.githubusercontent.com/velicanu/qd/master/media/qd_basic.gif -->
+<img src="https://raw.githubusercontent.com/velicanu/qd/master/media/qd_basic.gif" width="600">
+<!-- <a>![qd-basic](./media/qd_basic.gif)</a> -->
 
 In addition to reading from stdin and writing to stdout, files can also be passed in as
 arguments.
