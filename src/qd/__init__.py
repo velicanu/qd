@@ -160,7 +160,7 @@ def get_quant_fig(df, xcol, ycols, nbins, quantile):
 
 
 @click.command()
-@click.version_option()
+@click.version_option(package_name="quick-draw")
 @click.option(
     "-i", "--input", type=click.File(), default="-", help="Input file, default stdin"
 )
