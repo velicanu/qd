@@ -85,6 +85,11 @@ def get_hist_fig(df, xcols, nbins):
             )
         )
 
+    if len(xcols) == 1:
+        fig.update_layout(xaxis_title=xcols[0], yaxis_title="count")
+    if len(xcols) > 1:
+        fig.update_layout(xaxis_title="x", yaxis_title="count")
+
     return fig
 
 
@@ -120,6 +125,7 @@ def get_mean_fig(df, xcol, ycols, nbins):
         fig.data[idx].error_y = go.scatter.ErrorY(
             array=df_binned[f"{_ycol}_sem"].to_numpy()
         )
+    fig.update_layout(yaxis_title="mean value")
 
     return fig
 
@@ -143,12 +149,14 @@ def get_quant_fig(df, xcol, ycols, nbins, quantile):
             )
             / 2.0
         )
-
-    return px.line(
+    fig = px.line(
         df_binned,
         x=xcol,
         y=ycols,
     )
+    fig.update_layout(yaxis_title=f"{quantile} percentile value")
+
+    return fig
 
 
 @click.command()
@@ -199,7 +207,7 @@ def main(input, output, title, xcol, ycol, nbins, quantile, plot, gui, dualy):
         return
 
     if dualy and len(ycols) != 2:
-        print("exactly 2 columns are required for dual y axes")
+        print("exactly 2 y-columns are required for dual y axes")
         return
 
     if plot == "mean":
@@ -212,7 +220,6 @@ def main(input, output, title, xcol, ycol, nbins, quantile, plot, gui, dualy):
         fig = get_line_fig(df, xcols[0], ycols)
 
     fig.update_layout(title=title if title else input.name, title_x=0.5)
-    fig.update_layout(yaxis1={"title": ycols[0]})
     if dualy:
         fig.data[1].yaxis = "y2"
         fig.update_layout(
