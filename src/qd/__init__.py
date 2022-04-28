@@ -10,9 +10,26 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 from _plotly_utils.colors.qualitative import Plotly as colors
+from plotly.graph_objs._figure import Figure
 
 
-def get_df(input):
+def get_size(size):
+    dimensions = size.split(",") if size else []
+    scale = float(dimensions[0]) if dimensions else None
+    width = float(dimensions[1]) if len(dimensions) > 1 else None
+    height = float(dimensions[2]) if len(dimensions) > 2 else None
+    return scale, width, height
+
+
+def get_df(input) -> pd.DataFrame:
+    """
+    Tries to read the input file and return a dataframe.
+    Will first try to read the input as a json file,
+    If that doesn't work then it will try to read as a csv
+
+    input: file object
+    returns: a pandas dataframe
+    """
     with tempfile.TemporaryDirectory() as tmpdir:
         input_ = os.path.join(tmpdir, "_")
         with open(input_, "w") as out:
@@ -33,9 +50,15 @@ def get_df(input):
                 return df
         except ValueError:
             pass
+    raise ValueError("could not parse the input")
 
 
-def get_line_fig(df, xcol, ycols):
+def get_line_fig(df, xcol, ycols) -> Figure:
+    """
+    Makes a line chart from the given dataframe, x-column and y-columns
+
+    returns a plotly figure
+    """
     fig = px.line(
         df,
         x=xcol,
@@ -45,7 +68,13 @@ def get_line_fig(df, xcol, ycols):
     return fig
 
 
-def get_hist_fig(df, xcols, nbins):
+def get_hist_fig(df, xcols, nbins) -> Figure:
+    """
+    Makes a histogram from the given dataframe, columns, and number of bins
+    and displays the rootn error of these counts
+
+    returns a plotly figure
+    """
     binned_dfs = []
     for col in xcols:
         try:
@@ -93,7 +122,13 @@ def get_hist_fig(df, xcols, nbins):
     return fig
 
 
-def get_mean_fig(df, xcol, ycols, nbins):
+def get_mean_fig(df, xcol, ycols, nbins) -> Figure:
+    """
+    Makes a plot of mean values from the given dataframe, x-column, y-columns
+    and number of bins and displays the standard error of the means
+
+    returns a plotly figure
+    """
     try:
         df_binned = df.groupby(pd.cut(df[xcol], nbins)).mean()
         if xcol not in df_binned.columns:
@@ -130,7 +165,13 @@ def get_mean_fig(df, xcol, ycols, nbins):
     return fig
 
 
-def get_quant_fig(df, xcol, ycols, nbins, quantile):
+def get_quant_fig(df, xcol, ycols, nbins, quantile) -> Figure:
+    """
+    Makes a plot of the given quantile from the given dataframe, x-column, y-columns
+    and number of bins
+
+    returns a plotly figure
+    """
     _quantile = quantile / 100.0
     try:
         df_binned = df.groupby(pd.cut(df[xcol], nbins)).quantile(q=_quantile)
@@ -160,13 +201,11 @@ def get_quant_fig(df, xcol, ycols, nbins, quantile):
 
 
 @click.command()
-@click.version_option(package_name="quick-draw")
+@click.version_option(package_name="qd-plot")
 @click.option(
     "-i", "--input", type=click.File(), default="-", help="Input file, default stdin"
 )
-@click.option(
-    "-o", "--output", type=click.File("wb"), help="Output file, default stdout"
-)
+@click.option("-o", "--output", type=str, help="Output file, default stdout")
 @click.option("-t", "--title", type=str, help="Title, default input filename")
 @click.option("-x", "--xcol", type=str, help="x column, default first column")
 @click.option("-y", "--ycol", type=str, help="y column, default second column")
@@ -186,7 +225,8 @@ def get_quant_fig(df, xcol, ycols, nbins, quantile):
 @click.option("--hist", "plot", flag_value="hist", help="draw histgram of values")
 @click.option("--gui", is_flag=True, help="show output in a gui")
 @click.option("--dualy", is_flag=True, help="two y axes for two lines")
-def main(input, output, title, xcol, ycol, nbins, quantile, plot, gui, dualy):
+@click.option("-s", "--size", type=str, help="size: scale,[width],[height]")
+def main(input, output, title, xcol, ycol, nbins, quantile, plot, gui, dualy, size):
     df = get_df(input)
     xcols = xcol.split(",") if xcol else [df.columns[0]]
     if len(df.columns) > 1:
@@ -241,10 +281,11 @@ def main(input, output, title, xcol, ycol, nbins, quantile, plot, gui, dualy):
     if gui:
         fig.show()
         return
-    img_bytes = fig.to_image(format="png")
+    scale, width, height = get_size(size)
     if output:
-        output.write(img_bytes)
+        fig.write_image(output, scale=scale, width=width, height=height)
     else:
+        img_bytes = fig.to_image(format="png", scale=scale, width=width, height=height)
         sys.stdout.buffer.write(img_bytes)
 
 
