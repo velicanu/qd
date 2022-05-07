@@ -41,7 +41,7 @@ terminal window if using a compatible terminal, such as iTerm2 with `imgcat`:
 ```bash
 cat data/trig.json | qd | imgcat
 ```
-![qd basic](/media/qd_basic_imgcat.gif)
+<img src="https://raw.githubusercontent.com/velicanu/qd/master/media/qd_basic_imgcat.gif" width="600">
 
 
 ### More examples
@@ -51,7 +51,7 @@ cat data/trig.json | qd | imgcat
 Plot the mean values in some bins specifying the x and y columns.
 
 ```bash
-cat data/trig.json | qd -x x -y sin,cos --mean | imgcat
+cat data/trig.json | qd -x x -y sin,cos --mean --gui
 ```
 ![qd mean](/media/qd_mean.gif)
 
@@ -60,7 +60,7 @@ cat data/trig.json | qd -x x -y sin,cos --mean | imgcat
 Plot the 95th percentile values in 20 bins
 
 ```bash
-cat data/trig.json | qd -x x -y sin --quant -q 95 --nbins 20  | imgcat
+cat data/trig.json | qd -x x -y sin --quant -q 95 --nbins 20 --gui
 ```
 ![qd quant](/media/qd_quant.gif)
 
@@ -69,7 +69,7 @@ cat data/trig.json | qd -x x -y sin --quant -q 95 --nbins 20  | imgcat
 Make a histogram from two sets of data using 20 bins.
 
 ```bash
-cat data/dists.csv | qd -x gauss,expo --hist -n20 | imgcat
+cat data/dists.csv | qd -x gauss,expo --hist -n20 --gui
 ```
 ![qd hist](/media/qd_hist.gif)
 
