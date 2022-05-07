@@ -8,7 +8,7 @@ README = open(os.path.join(SCRIPT_DIR, "README.md")).read()
 
 setup(
     name="qd-plot",
-    version="0.0.1",
+    version="0.0.2",
     description="quickdraw - a cli plotting tool",
     long_description=README,
     long_description_content_type="text/markdown",

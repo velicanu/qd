@@ -7,29 +7,24 @@ streams. It is built on top of the `pandas` and `plotly` libraries.
 
 ## Installation and usage
 
-`qd` can be installed via `pip install quick-draw`. It requires Python 3.7+.
+`qd` can be installed via `pip install qd-plot`. It requires Python 3.7+.
 
 ## Basic usage
 
-Make a quick plot using the first columns available and display the output right in the
-terminal.
+Make a quick plot using the first columns available and display the output in a gui
+(default web browser).
 
 ```bash
-cat data/trig.json | qd | imgcat
+cat data/trig.json | qd --gui
 ```
-<img src="https://raw.githubusercontent.com/velicanu/qd/master/media/qd_basic.gif" width="600">
+![qd basic](/media/qd_basic.gif)
 
-In addition to reading from stdin and writing to stdout, files can also be passed in as
-arguments.
+By default `qd` reads data from `stdin` and writes image bytes to `stdout`, however it
+also accepts input and output files as arguments, as well as the `--gui` option shown
+above.
 
 ```bash
 qd -i data/trig.json -o trig.png
-```
-
-The output can also be shown in an interactive gui.
-
-```bash
-qd -i data/trig.json --gui
 ```
 
 All the cli functionality available can be seen via the `--help` option.
@@ -37,6 +32,17 @@ All the cli functionality available can be seen via the `--help` option.
 ```bash
 qd --help
 ```
+
+### MacOS + iTerm2
+
+Since `qd` writes to stdout by default, the images can be displayed right in the
+terminal window if using a compatible terminal, such as iTerm2 with `imgcat`:
+
+```bash
+cat data/trig.json | qd | imgcat
+```
+![qd basic](/media/qd_basic_imgcat.gif)
+
 
 ### More examples
 
@@ -47,7 +53,7 @@ Plot the mean values in some bins specifying the x and y columns.
 ```bash
 cat data/trig.json | qd -x x -y sin,cos --mean | imgcat
 ```
-<img src="https://raw.githubusercontent.com/velicanu/qd/master/media/qd_mean.gif" width="600">
+![qd mean](/media/qd_mean.gif)
 
 #### Percentile in bins
 
@@ -56,7 +62,7 @@ Plot the 95th percentile values in 20 bins
 ```bash
 cat data/trig.json | qd -x x -y sin --quant -q 95 --nbins 20  | imgcat
 ```
-<img src="https://raw.githubusercontent.com/velicanu/qd/master/media/qd_quant.gif" width="600">
+![qd quant](/media/qd_quant.gif)
 
 #### Histogram of values
 
@@ -65,7 +71,7 @@ Make a histogram from two sets of data using 20 bins.
 ```bash
 cat data/dists.csv | qd -x gauss,expo --hist -n20 | imgcat
 ```
-<img src="https://raw.githubusercontent.com/velicanu/qd/master/media/qd_hist.gif" width="600">
+![qd hist](/media/qd_hist.gif)
 
 ## Local Development
 
