@@ -43,9 +43,11 @@ def get_df(input) -> pd.DataFrame:
         try:
             df = pd.read_csv(input_)
             if len(df.columns) < 2:
-                if len(df.head(1).values[0][0].split()) == 2:
+                first_line = df.head(1).values[0][0]
+                if type(first_line) == str and len(first_line.split()) == 2:
                     # for space seperated values with no header
                     return pd.read_csv(input_, header=None, sep=None, names=["x", "y"])
+                return df
             else:
                 return df
         except ValueError:
